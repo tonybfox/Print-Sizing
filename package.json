@@ -1,0 +1,12 @@
+{
+  "name": "print-sizing",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Phone-friendly photo sheets at exact sizes and posters tiled across pages.",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "serve": "npx --yes http-server -c-1 -p 8080 .",
+    "e2e": "node tests/e2e.mjs"
+  }
+}

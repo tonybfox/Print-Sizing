@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Print Sizing</title>
+    <meta name="description" content="Print photos at exact sizes or several to a page, and tile big images across sheets, from your phone." />
+    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Print Sizing" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="css/app.css" />
+    <script type="module" src="js/app.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <div class="seg tabs" data-setting="mode" role="tablist" aria-label="Mode">
+        <button type="button" data-value="sheet">Photo sheet</button>
+        <button type="button" data-value="poster">Poster</button>
+      </div>
+      <button type="button" class="icon-btn" id="btnSettings" aria-label="Settings and help">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6a.5.5 0 0 0 .1-.6l-1.9-3.3a.5.5 0 0 0-.6-.2l-2.4 1a7.4 7.4 0 0 0-1.7-1l-.4-2.6a.5.5 0 0 0-.5-.4h-3.8a.5.5 0 0 0-.5.4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.4-1a.5.5 0 0 0-.6.2L2.5 8.8a.5.5 0 0 0 .1.6L4.6 11a7.6 7.6 0 0 0 0 2l-2 1.6a.5.5 0 0 0-.1.6l1.9 3.3c.1.2.4.3.6.2l2.4-1c.5.4 1.1.7 1.7 1l.4 2.6c0 .2.2.4.5.4h3.8c.3 0 .5-.2.5-.4l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.4 1c.2.1.5 0 .6-.2l1.9-3.3a.5.5 0 0 0-.1-.6zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"
+          />
+        </svg>
+      </button>
+    </header>
+
+    <div class="layout">
+      <section class="preview" id="preview" aria-label="Preview">
+        <div class="pages" id="pages"></div>
+        <div class="preview-foot">
+          <p class="caption" id="caption"></p>
+          <p class="pager" id="pager" hidden></p>
+        </div>
+      </section>
+
+      <main class="controls">
+        <div class="install-tip" id="installTip" hidden>
+          <span>Use it like an app: tap <b>Share</b> then <b>Add to Home Screen</b>.</span>
+          <button type="button" class="link" id="btnInstallTipClose" aria-label="Dismiss">✕</button>
+        </div>
+        <!-- ===== Photo sheet ===== -->
+        <div data-show="mode=sheet">
+          <section class="card">
+            <div class="card-head">
+              <h2>Photos</h2>
+              <button type="button" class="link" id="btnClear" hidden>Clear all</button>
+            </div>
+            <div class="thumbs" id="thumbs">
+              <label class="thumb add" aria-label="Add photos">
+                <input type="file" id="fileSheet" accept="image/*" multiple />
+                <span class="plus">+</span>
+                <small>Add</small>
+              </label>
+            </div>
+            <p class="hint" id="photosHint">Add from Photos or Files. Tap a photo to crop, rotate or print extra copies.</p>
+          </section>
+
+          <section class="card">
+            <h2>Size</h2>
+            <div class="seg wide" data-setting="sheet.sizing">
+              <button type="button" data-value="count">Photos per page</button>
+              <button type="button" data-value="size">Exact size</button>
+            </div>
+
+            <div data-show="sheet.sizing=count">
+              <div class="row">
+                <span>Photos per page</span>
+                <div class="stepper" data-setting="sheet.perPage" data-min="1" data-max="100">
+                  <button type="button" data-step="-1" aria-label="Fewer">−</button>
+                  <input type="number" inputmode="numeric" aria-label="Photos per page" />
+                  <button type="button" data-step="1" aria-label="More">+</button>
+                </div>
+              </div>
+              <div class="chips" data-chips="sheet.perPage" data-values="1,2,3,4,6,8,9,12,16,20"></div>
+            </div>
+
+            <div data-show="sheet.sizing=size">
+              <div class="row size-row">
+                <label class="dim">
+                  <small>Width</small>
+                  <span class="field"><input type="text" inputmode="decimal" data-setting="sheet.pieceW" data-kind="length" data-min="1" /><span class="u"></span></span>
+                </label>
+                <button type="button" class="icon-btn swap" id="btnSwap" aria-label="Swap width and height">⇄</button>
+                <label class="dim">
+                  <small>Height</small>
+                  <span class="field"><input type="text" inputmode="decimal" data-setting="sheet.pieceH" data-kind="length" data-min="1" /><span class="u"></span></span>
+                </label>
+              </div>
+              <div class="chips" id="presetChips"></div>
+              <div class="row">
+                <span>Units</span>
+                <div class="seg small" data-setting="unit">
+                  <button type="button" data-value="in">in</button>
+                  <button type="button" data-value="cm">cm</button>
+                  <button type="button" data-value="mm">mm</button>
+                </div>
+              </div>
+              <label class="row">
+                <span>Match each photo's shape<small>Landscape photos print sideways (e.g. 3 × 2 instead of 2 × 3)</small></span>
+                <input type="checkbox" class="switch" data-setting="sheet.matchOrientation" />
+              </label>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Paper</h2>
+            <div class="row">
+              <span>Paper size</span>
+              <select class="paper-select" data-setting="sheet.paper"></select>
+            </div>
+            <div class="row" data-show="sheet.paper=custom">
+              <span>Paper W × H</span>
+              <span class="pair">
+                <span class="field"><input type="text" inputmode="decimal" data-setting="sheet.customW" data-kind="length" data-min="20" /></span>
+                ×
+                <span class="field"><input type="text" inputmode="decimal" data-setting="sheet.customH" data-kind="length" data-min="20" /><span class="u"></span></span>
+              </span>
+            </div>
+            <div class="row">
+              <span>Orientation</span>
+              <div class="seg small" data-setting="sheet.orientation">
+                <button type="button" data-value="auto">Auto</button>
+                <button type="button" data-value="portrait">Portrait</button>
+                <button type="button" data-value="landscape">Landscape</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Layout</h2>
+            <div class="row">
+              <span>Photo fit<small id="fitHint"></small></span>
+              <div class="seg small" data-setting="sheet.fitCount" data-show="sheet.sizing=count">
+                <button type="button" data-value="fit">Whole photo</button>
+                <button type="button" data-value="fill">Fill &amp; crop</button>
+              </div>
+              <div class="seg small" data-setting="sheet.fitExact" data-show="sheet.sizing=size">
+                <button type="button" data-value="fit">Whole photo</button>
+                <button type="button" data-value="fill">Fill &amp; crop</button>
+              </div>
+            </div>
+            <label class="row" data-show="sheet.sizing=count">
+              <span>Turn photos to fit best</span>
+              <input type="checkbox" class="switch" data-setting="sheet.autoRotate" />
+            </label>
+            <div class="row">
+              <span>Page margin<small>Keep at least 3–5 mm unless printing borderless</small></span>
+              <span class="field"><input type="text" inputmode="decimal" data-setting="sheet.margin" data-kind="length" data-min="0" /><span class="u"></span></span>
+            </div>
+            <div class="row">
+              <span>Space between photos</span>
+              <span class="field"><input type="text" inputmode="decimal" data-setting="sheet.gap" data-kind="length" data-min="0" /><span class="u"></span></span>
+            </div>
+            <div class="row">
+              <span>Cut guides</span>
+              <select data-setting="sheet.guidesCount" data-show="sheet.sizing=count">
+                <option value="none">None</option>
+                <option value="outline">Thin outline</option>
+                <option value="marks">Corner marks</option>
+              </select>
+              <select data-setting="sheet.guidesExact" data-show="sheet.sizing=size">
+                <option value="none">None</option>
+                <option value="outline">Thin outline</option>
+                <option value="marks">Corner marks</option>
+              </select>
+            </div>
+            <label class="row">
+              <span>Fill the page with copies<small>Repeats your photos to use every space</small></span>
+              <input type="checkbox" class="switch" data-setting="sheet.fillPage" />
+            </label>
+          </section>
+        </div>
+
+        <!-- ===== Poster ===== -->
+        <div data-show="mode=poster">
+          <section class="card">
+            <h2>Image</h2>
+            <div class="poster-pick">
+              <button type="button" class="poster-thumb" id="posterThumb" hidden aria-label="Rotate or crop the image"><img alt="" /></button>
+              <div class="poster-actions">
+                <label class="btn secondary">
+                  <input type="file" id="filePoster" accept="image/*" />
+                  <span id="posterPickLabel">Choose image</span>
+                </label>
+                <button type="button" class="btn secondary" id="btnPosterEdit" hidden>Rotate / crop</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Poster size</h2>
+            <div class="seg wide" data-setting="poster.sizeBy">
+              <button type="button" data-value="grid">Pages</button>
+              <button type="button" data-value="width">Width</button>
+              <button type="button" data-value="height">Height</button>
+            </div>
+            <div data-show="poster.sizeBy=grid">
+              <div class="row">
+                <span>Pages across</span>
+                <div class="stepper" data-setting="poster.cols" data-min="1" data-max="20">
+                  <button type="button" data-step="-1" aria-label="Fewer">−</button>
+                  <input type="number" inputmode="numeric" aria-label="Pages across" />
+                  <button type="button" data-step="1" aria-label="More">+</button>
+                </div>
+              </div>
+              <div class="row">
+                <span>Pages down</span>
+                <div class="stepper" data-setting="poster.rows" data-min="1" data-max="20">
+                  <button type="button" data-step="-1" aria-label="Fewer">−</button>
+                  <input type="number" inputmode="numeric" aria-label="Pages down" />
+                  <button type="button" data-step="1" aria-label="More">+</button>
+                </div>
+              </div>
+              <label class="row">
+                <span>Fill every page<small>Crops the image to the shape of the pages</small></span>
+                <input type="checkbox" class="switch" data-setting="poster.fill" />
+              </label>
+            </div>
+            <div class="row" data-show="poster.sizeBy=width">
+              <span>Finished width</span>
+              <span class="field"><input type="text" inputmode="decimal" data-setting="poster.width" data-kind="length" data-min="10" /><span class="u"></span></span>
+            </div>
+            <div class="row" data-show="poster.sizeBy=height">
+              <span>Finished height</span>
+              <span class="field"><input type="text" inputmode="decimal" data-setting="poster.height" data-kind="length" data-min="10" /><span class="u"></span></span>
+            </div>
+            <div class="row">
+              <span>Units</span>
+              <div class="seg small" data-setting="unit">
+                <button type="button" data-value="in">in</button>
+                <button type="button" data-value="cm">cm</button>
+                <button type="button" data-value="mm">mm</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Paper</h2>
+            <div class="row">
+              <span>Paper size</span>
+              <select class="paper-select" data-setting="poster.paper"></select>
+            </div>
+            <div class="row" data-show="poster.paper=custom">
+              <span>Paper W × H</span>
+              <span class="pair">
+                <span class="field"><input type="text" inputmode="decimal" data-setting="poster.customW" data-kind="length" data-min="20" /></span>
+                ×
+                <span class="field"><input type="text" inputmode="decimal" data-setting="poster.customH" data-kind="length" data-min="20" /><span class="u"></span></span>
+              </span>
+            </div>
+            <div class="row">
+              <span>Orientation</span>
+              <div class="seg small" data-setting="poster.orientation">
+                <button type="button" data-value="auto">Auto</button>
+                <button type="button" data-value="portrait">Portrait</button>
+                <button type="button" data-value="landscape">Landscape</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Joining the pages</h2>
+            <div class="row">
+              <span>Page margin<small>Most printers can't print the outer 3–5 mm</small></span>
+              <span class="field"><input type="text" inputmode="decimal" data-setting="poster.margin" data-kind="length" data-min="0" /><span class="u"></span></span>
+            </div>
+            <div class="row">
+              <span>Overlap<small>Repeat a strip on the next page to glue under</small></span>
+              <span class="field"><input type="text" inputmode="decimal" data-setting="poster.overlap" data-kind="length" data-min="0" /><span class="u"></span></span>
+            </div>
+            <label class="row">
+              <span>Trim marks &amp; page labels</span>
+              <input type="checkbox" class="switch" data-setting="poster.guides" />
+            </label>
+            <details class="howto">
+              <summary>How to put it together</summary>
+              <ol>
+                <li>Each page is labelled (A1, A2, B1…) with a little map showing where it goes. Row A is the top.</li>
+                <li><b>No overlap:</b> trim the margins off along the corner marks and butt the pages edge to edge, taping on the back.</li>
+                <li><b>With overlap:</b> trim the top and left margins of each page (except row A and column 1), then lay it over its neighbour so its edge sits on the dashed marks. Glue or tape.</li>
+              </ol>
+            </details>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <footer class="actionbar">
+      <div class="action-info" id="actionInfo"></div>
+      <button type="button" class="btn primary" id="btnPrint">Print…</button>
+    </footer>
+
+    <!-- Photo editor -->
+    <dialog id="dlgEdit" class="sheet">
+      <form method="dialog" class="sheet-inner">
+        <div class="sheet-head">
+          <h3 id="editTitle">Photo</h3>
+          <button class="link strong" value="done">Done</button>
+        </div>
+        <div class="crop-wrap" id="cropWrap"><canvas id="cropCanvas"></canvas></div>
+        <p class="hint center" id="cropHint"></p>
+        <div class="row" id="zoomRow">
+          <span>Zoom</span>
+          <input type="range" id="cropZoom" min="1" max="6" step="0.01" value="1" />
+        </div>
+        <div class="row">
+          <span>Rotate</span>
+          <span class="btn-group">
+            <button type="button" class="btn secondary small" id="rotL" aria-label="Rotate left">⟲</button>
+            <button type="button" class="btn secondary small" id="rotR" aria-label="Rotate right">⟳</button>
+          </span>
+        </div>
+        <div class="row" id="copiesRow">
+          <span>Copies</span>
+          <div class="stepper" id="copiesStepper" data-min="1" data-max="200">
+            <button type="button" data-step="-1" aria-label="Fewer">−</button>
+            <input type="number" inputmode="numeric" aria-label="Copies" />
+            <button type="button" data-step="1" aria-label="More">+</button>
+          </div>
+        </div>
+        <div class="sheet-actions">
+          <button type="button" class="btn secondary" id="btnResetCrop">Reset crop</button>
+          <button type="button" class="btn danger" id="btnRemove">Remove</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- PDF ready -->
+    <dialog id="dlgReady" class="sheet">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h3>Ready to print</h3>
+          <button type="button" class="link strong" data-close>Close</button>
+        </div>
+        <p id="readyInfo" class="ready-info"></p>
+        <button type="button" class="btn primary block" id="btnShare">Print or share…</button>
+        <a class="btn secondary block" id="lnkSave" download>Save PDF to Files</a>
+        <div class="tips">
+          <h4>Printing tips</h4>
+          <ul>
+            <li>In the share sheet choose <b>Print</b>, or your printer's own app (HP Smart, Epson, Canon…) if it's listed.</li>
+            <li>In the print options pick paper size <b id="tipPaper">A4</b> and load that paper.</li>
+            <li id="tipScale">If your printer app has a scaling option, choose <b>100% / actual size</b>, not “fit to page”.</li>
+            <li>Sizes come out slightly small? Use <b>Printer size check</b> in Settings (⚙︎).</li>
+          </ul>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Settings -->
+    <dialog id="dlgSettings" class="sheet">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <h3>Settings</h3>
+          <button type="button" class="link strong" data-close>Done</button>
+        </div>
+        <section class="group">
+          <div class="row">
+            <span>Units</span>
+            <div class="seg small" data-setting="unit">
+              <button type="button" data-value="in">in</button>
+              <button type="button" data-value="cm">cm</button>
+              <button type="button" data-value="mm">mm</button>
+            </div>
+          </div>
+          <div class="row">
+            <span>Print quality<small>High is sharper; Standard makes smaller files</small></span>
+            <div class="seg small" data-setting="dpi" data-kind="int">
+              <button type="button" data-value="200">Standard</button>
+              <button type="button" data-value="300">High</button>
+            </div>
+          </div>
+        </section>
+        <section class="group">
+          <h4>Printer size check</h4>
+          <p class="hint">
+            Printing from iPhone can shrink pages slightly to fit the printer's margins. Print a test page on
+            <b id="calPaper">A4</b>, measure the line, and sizes will be corrected for that paper.
+          </p>
+          <div class="row"><span>Current correction</span><b id="calValue">100%</b></div>
+          <button type="button" class="btn secondary block" id="btnTestPage">Print test page</button>
+          <div class="row">
+            <span id="calLabel">Measured length of the line</span>
+            <span class="field"><input type="text" inputmode="decimal" id="calInput" placeholder="" /><span id="calUnit">mm</span></span>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn primary" id="btnCalApply">Apply</button>
+            <button type="button" class="btn secondary" id="btnCalReset">Reset to 100%</button>
+          </div>
+        </section>
+        <section class="group help">
+          <h4>Tips</h4>
+          <ul>
+            <li><b>Install it:</b> in Safari tap Share → <b>Add to Home Screen</b>. It then opens full screen and works offline.</li>
+            <li>Tap any photo in the preview to choose which part is kept when cropping.</li>
+            <li>Exact sizes are printed exactly. Turn on cut guides to make cutting out easier.</li>
+            <li>Your photos never leave your phone: everything is done on the device.</li>
+          </ul>
+        </section>
+      </div>
+    </dialog>
+
+    <div class="busy" id="busy" hidden>
+      <div class="busy-box">
+        <div class="spinner"></div>
+        <p id="busyText">Working…</p>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
