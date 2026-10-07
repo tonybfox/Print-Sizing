@@ -1,10 +1,23 @@
 # Print Sizing for iPhone (native app)
 
-**Status:** the layout engine (`PrintSizing/Layout`) is ported from the tested web version (`js/layout.js`) and has unit tests (`PrintLayoutTests`). It has **not been compiled yet**: it was written in an environment without Swift. The Xcode project, UI and printing are still to build, following the design below.
+**Status:** runs in the iOS Simulator. Photo sheets, posters, the photo editor, settings, printing and Share PDF all work, following the design below. Printing has only been checked as far as the iPhone print screen (paper, orientation and preview are right); it still needs a real print on the Epson ET-2850 and a run with Xcode's Printer Simulator.
 
 ```sh
-cd ios && swift test   # layout engine tests, no Xcode project needed
+cd ios
+swift test        # layout engine tests, no Xcode project needed
+xcodegen          # regenerate PrintSizing.xcodeproj after adding or removing files
+open PrintSizing.xcodeproj
 ```
+
+The Xcode project is generated from `project.yml` by [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`). The generated project is committed so Xcode can open it directly.
+
+### Code layout
+
+- `PrintSizing/Layout`: the layout engine (plain Swift, unit tested by `PrintLayoutTests`).
+- `PrintSizing/Model`: settings (JSON in `UserDefaults`), photos (original data plus a 1200 px preview) and `AppModel`, which builds the plan and the captions.
+- `PrintSizing/Drawing`: draws a `Page` into any Core Graphics context. The preview, printing and the PDF all use it.
+- `PrintSizing/Printing`: decoding at print resolution, the `UIPrintPageRenderer`, paper choice and the PDF.
+- `PrintSizing/Views`: SwiftUI screens.
 
 ## Why native
 
@@ -74,7 +87,7 @@ Mirrors the web app (`index.html`, `js/app.js`).
 
 ## Project setup
 
-- `PrintSizing.xcodeproj`: iOS App with SwiftUI, deployment target iOS 17, Swift 5 language mode.
-  - Bundle ID `com.tonybfox.PrintSizing`, automatic signing with your team, iPhone portrait.
+- `project.yml` → `PrintSizing.xcodeproj`: iOS App with SwiftUI, deployment target iOS 17, Swift 5 language mode.
+  - Bundle ID `com.tonybfox.PrintSizing`, automatic signing, iPhone portrait. Choose your team in Signing & Capabilities to run on a phone.
   - Every file under `PrintSizing/`, including `Layout/`, is an app source.
-- **App icon:** render `../icons/icon.svg` with square corners and no alpha to a 1024 px PNG.
+- **App icon:** `Assets.xcassets/AppIcon.appiconset/icon-1024.png`, rendered from `../icons/icon.svg` with square corners and no alpha.
